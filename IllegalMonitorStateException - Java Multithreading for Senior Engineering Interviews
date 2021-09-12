@@ -1,0 +1,31 @@
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+class Demonstration {
+    public static void main( String args[]) throws Exception {
+        Lock lock = new ReentrantLock();
+        Condition condition = lock.newCondition();
+
+        // throws exception because we didn't lock the associated
+        // lock object with the condition variable before invoking
+        // await() on the condition object.
+        condition.await();
+    }
+}
+
+
+
+class Demonstration {
+    public static void main( String args[] ) throws Exception {
+        Object myObject = new Object();
+
+        // throws exception because we didn't synchronize
+        // on myObject before invoking the wait() method  
+        myObject.notifyAll();
+    }
+}
+
+
+
+

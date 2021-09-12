@@ -1,0 +1,50 @@
+class Demonstration {
+    public static void main( String args[] ) {
+        Thread t = new Thread(new Runnable() {
+
+            public void run() {
+                System.out.println("Say Hello");
+            }
+        });
+        t.start();
+    }
+}
+
+
+
+class Demonstration {
+    public static void main( String args[] ) {
+        
+        ExecuteMe executeMe = new ExecuteMe();
+        Thread t = new Thread(executeMe);
+        t.start();
+    }
+}
+
+class ExecuteMe implements Runnable {
+ 
+  public void run() {
+    System.out.println("Say Hello");
+  }
+  
+}
+
+
+
+class Demonstration {
+    public static void main( String args[] ) throws Exception {
+        ExecuteMe executeMe = new ExecuteMe();
+        executeMe.start();
+        executeMe.join();
+      
+    }
+}
+
+class ExecuteMe extends Thread {
+  
+  @Override
+  public void run() {
+    System.out.println("I ran after extending Thread class");
+  }
+  
+}

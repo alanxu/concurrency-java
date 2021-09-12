@@ -1,0 +1,205 @@
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+class Demonstration {
+    
+    // Create and initialize a threadpool
+    static ExecutorService threadPool = Executors.newFixedThreadPool(2);
+  
+    public static void main( String args[] ) throws Exception {
+        System.out.println( "sum :" + findSum(10));
+        threadPool.shutdown();
+    }
+  
+    static int findSum(final int n) throws ExecutionException, InterruptedException {
+
+        Callable<Integer> sumTask = new Callable<Integer>() {
+
+            public Integer call() throws Exception {
+                int sum = 0;
+                for (int i = 1; i <= n; i++)
+                    sum += i;
+                return sum;
+            }
+        };
+
+        Future<Integer> f = threadPool.submit(sumTask);
+        return f.get();
+    }  
+  
+  
+}
+
+
+
+
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+
+class Demonstration {
+
+    static ExecutorService threadPool = Executors.newFixedThreadPool(2);  
+  
+    public static void main( String args[] ) throws Exception {
+        System.out.println( " sum: " + findSumWithException(10));
+        threadPool.shutdown();
+    }
+  
+    static int findSumWithException(final int n) throws ExecutionException, InterruptedException {
+
+        int result = -1;
+
+        Callable<Integer> sumTask = new Callable<Integer>() {
+
+            public Integer call() throws Exception {
+                throw new RuntimeException("something bad happened.");
+            }
+        };
+
+        Future<Integer> f = threadPool.submit(sumTask);
+
+        try {
+            result = f.get();
+        } catch (ExecutionException ee) {
+            System.out.println("Something went wrong. " + ee.getCause());
+        }
+
+        return result;
+    }  
+  
+}
+
+
+
+
+
+
+
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+class Demonstration {
+  
+    static ExecutorService threadPool = Executors.newSingleThreadExecutor();
+  
+    public static void main( String args[] ) throws Exception {
+        System.out.println(pollingStatusAndCancelTask(10));
+        threadPool.shutdown();
+    }
+  
+    static int pollingStatusAndCancelTask(final int n) throws Exception {
+        
+        int result = -1;
+
+        Callable<Integer> sumTask1 = new Callable<Integer>() {
+
+            public Integer call() throws Exception {
+
+                // wait for 10 milliseconds
+                Thread.sleep(10);
+
+                int sum = 0;
+                for (int i = 1; i <= n; i++)
+                    sum += i;
+                return sum;
+            }
+        };
+
+        Callable<Void> randomTask = new Callable<Void>() {
+
+            public Void call() throws Exception {
+
+                // go to sleep for an hours
+                Thread.sleep(3600 * 1000);
+                return null;
+            }
+        };
+
+        Future<Integer> f1 = threadPool.submit(sumTask1);
+        Future<Void> f2 = threadPool.submit(randomTask);
+
+        // Poll for completion of first task
+        try {
+
+            // Before we poll for completion of second task,
+            // cancel the second one
+            f2.cancel(true);
+
+            // Polling the future to check the status of the
+            // first submitted task
+            while (!f1.isDone()) {
+                System.out.println("Waiting for first task to complete.");
+            }
+            result = f1.get();
+        } catch (ExecutionException ee) {
+            System.out.println("Something went wrong.");
+        }
+
+        System.out.println("\nIs second task cancelled : " + f2.isCancelled());
+
+        return result;      
+    } 
+}
+
+
+
+
+
+
+
+
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+
+class Demonstration {
+
+    @SuppressWarnings("unchecked")
+    public static void main( String args[] ) throws Exception{
+        
+        FutureTask<Integer> futureTask = new FutureTask(new Callable() {
+
+            public Object call() throws Exception {
+                try{
+                    Thread.sleep(1);
+                }
+                catch(InterruptedException ie){
+                    // swallow exception
+                }
+                return 5;
+            }
+        });
+
+        ExecutorService threadPool = Executors.newSingleThreadExecutor();
+        Future duplicateFuture = threadPool.submit(futureTask);
+
+        // Awful idea to busy wait
+        while (!futureTask.isDone()) {
+            System.out.println("Waiting");
+        }
+
+        if(duplicateFuture.isDone() != futureTask.isDone()){
+            System.out.println("This should never happen.");
+        }
+
+        System.out.println((int)futureTask.get());
+                                      
+        threadPool.shutdown();                              
+    }
+}

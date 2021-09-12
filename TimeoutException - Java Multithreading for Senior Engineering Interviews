@@ -1,0 +1,16 @@
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.BrokenBarrierException;
+
+class Demonstration {
+    public static void main( String args[] ) throws TimeoutException, InterruptedException, BrokenBarrierException {
+
+        // create a barrier for two threads.
+        CyclicBarrier barrier = new CyclicBarrier(2);
+
+        // TimeoutException thrown after 100 ms elapse
+        barrier.await(100, TimeUnit.MILLISECONDS);
+
+    }
+}

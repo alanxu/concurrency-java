@@ -1,0 +1,78 @@
+class Demonstration {
+    public static void main( String args[] ) {
+        Superman superman = Superman.getInstance();
+        superman.fly();
+    }
+}
+
+class Superman {
+    private static Superman superman = new Superman();
+
+    private Superman() {
+    }
+
+    public static Superman getInstance() {
+        return superman;
+    }
+
+    public void fly() {
+      System.out.println("I am flyyyyinggggg ...");
+    }
+}
+
+
+
+class Demonstration {
+    public static void main( String args[] ) {
+        Superman superman = Superman.getInstance();
+        superman.fly();
+        
+    }
+}
+
+class Superman {
+    private static Superman superman;
+
+    private Superman() {
+    }
+
+    public synchronized static Superman getInstance() {
+
+        if (superman == null) {
+            superman = new Superman();
+        }
+
+        return superman;
+    }
+
+    public void fly() {
+      System.out.println("I am flyyyyinggggg ...");
+    }    
+}
+
+
+
+class Demonstration {
+    public static void main( String args[] ) {
+        Superman superman = Superman.getInstance();
+        superman.fly();
+    }
+}
+
+class Superman {
+
+    private Superman() {
+    }
+
+    private static class Holder {
+        private static final Superman superman = new Superman();
+    }
+
+    public static Superman getInstance() {
+        return Holder.superman;
+    }
+
+    public void fly() {
+        System.out.println("I am flyyyyinggggg ...");
+    }    
+}

@@ -1,0 +1,223 @@
+import java.util.*;
+
+class Demonstration {
+    public static void main( String args[] ) {
+        HashMap<String, Integer> map = new HashMap<>();
+
+        // Fill the HashMap with some data
+        int i = 0;
+        for (i = 0; i < 100; i++) {
+            map.put("key-" + i, i);
+        }
+
+        // Get an iterator for the entries in the map
+        Iterator it = map.entrySet().iterator();
+
+        while (it.hasNext()) {
+            // Add a new key/value pair while the map is
+            // being traversed.
+            map.put("key-" + i, i);
+            it.next();
+            i++;
+        }
+    }
+}
+
+
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+class Demonstration {
+  
+    public static void main( String args[] ) throws Exception {
+
+        HashMap<String, Integer> map = new HashMap<>();
+        ExecutorService es = Executors.newFixedThreadPool(5);
+
+        try {
+            // create a task that slowly reads from the map.
+            Runnable reader = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ie) { /*ignore*/ }
+
+                    for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ie) { /*ignore*/ }
+                        System.out.println("key " + entry.getKey() + " value " + entry.getValue());
+
+                    }
+                }
+            };
+
+            // create a task to write to the map a little faster than the reader
+            Runnable writer = new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 100; i++) {
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException ie) { /*ignore*/ }
+                        map.put("key-" + i, i);
+                    }
+                }
+            };
+
+            // submit the task twice
+            Future future1 = es.submit(writer);
+            Future future2 = es.submit(reader);
+
+            // wait for the threads to finish
+            future1.get();
+            future2.get();
+        } finally {
+            // We know the code will generate a ConcurrentModificationException so
+            // remember to shutdown the executor service in a finally block
+            es.shutdown();
+        }
+
+    }
+}
+
+
+
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+class Demonstration {
+    public static void main( String args[] ) {
+        test(new Hashtable<String, Integer>());
+        test(new HashMap<String, Integer>());
+        test(Collections.synchronizedMap(new HashMap<String, Integer>()));
+        test(new ConcurrentHashMap<String, Integer>());
+    }
+
+    static void test(Map<String, Integer> map) {
+
+        // Put some data in the map
+        int i;
+        for (i = 0; i < 10; i++) {
+            map.put("key-" + i, i);
+        }
+
+        Iterator it = map.entrySet().iterator();
+
+        while (it.hasNext()) {
+            map.put("key-" + i, i);
+            try {
+                it.next();
+            } catch (ConcurrentModificationException ex) {
+                System.out.println("ConcurrentModificationException thrown for map " + map.getClass().getName());
+                return;
+            }
+            i++;
+        }
+
+        System.out.println("No exception thrown for map " + map.getClass().getName());
+    }    
+}
+
+
+
+
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+class Demonstration {
+    public static void main( String args[] ) throws Exception {
+
+        ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+        ExecutorService es = Executors.newFixedThreadPool(5);
+
+        try {
+            // create a reader that slowly reads from the map.
+            Runnable reader = new Runnable() {
+                @Override
+                public void run() {
+
+                    // wait for writer to put in some entries in the map
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException ie) { /*ignore*/ }
+
+                    int seen = 0;
+                    for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException ie) { /*ignore*/ }
+                        entry.getValue();
+                        seen++;
+                    }
+
+                    System.out.println("Number of entries seen by reader thread : " + seen);
+                }
+            };
+
+            // create a writer that inputs 1000 entries in the map
+            Runnable writer = new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 1000; i++) {
+                        try {
+                            Thread.sleep(5);
+                        } catch (InterruptedException ie) { /*ignore*/ }
+                        map.put("key-" + i, i);
+                    }
+                    System.out.println("Writer thread finished.");
+                }
+            };
+
+            // submit the two tasks
+            Future future1 = es.submit(writer);
+            Future future2 = es.submit(reader);
+
+            // wait for the threads to finish
+            future1.get();
+            future2.get();
+        } finally {
+            es.shutdown();
+        }
+    }
+}
+
+
+
+
+import java.util.*;
+
+class Demonstration {
+    public static void main( String args[] ) {
+        Map<String, Integer> map = new HashMap<>();
+        Random random = new Random(System.currentTimeMillis());
+
+        // Put some data in the map
+        for (int i = 0; i < 10; i++) {
+            map.put("key-" + i, i);
+        }
+
+        Iterator it = map.entrySet().iterator();
+
+        while (it.hasNext()) {
+            it.next();
+            int k = random.nextInt(10);
+            map.put("key-" + k, k);
+        } 
+
+        System.out.println("Program completes successfully.");    
+    }
+}
+
+
+

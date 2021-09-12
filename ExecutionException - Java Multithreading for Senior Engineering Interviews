@@ -1,0 +1,34 @@
+import java.util.concurrent.*;
+
+class Demonstration {
+    public static void main( String args[] ) {
+        ExecutorService es = Executors.newFixedThreadPool(5);
+
+        // Create a FutureTask, which takes in an instance of Callable
+        FutureTask<Integer> futureTask = new FutureTask<>(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                // The task simulates encountering an exception by throwing one.
+                throw new RuntimeException("runtime issue");
+            }
+        });
+
+        try {
+            es.submit(futureTask);
+
+            // wait a while for the task
+            Thread.sleep(300);
+
+            // Attempt to get the result of the task
+            futureTask.get();
+        } catch (ExecutionException e) {
+            // You should see the following line print in the console.
+            System.out.println("ExceutionException thrown by program.");
+        } catch (InterruptedException ie) {
+            // we can ignore InterruptedException for demo purposes
+        } finally {
+            // remember to shutdown the executor service
+            es.shutdown();
+        }
+    }
+}
